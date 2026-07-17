@@ -359,39 +359,41 @@ async function initApp() {
   const trendingRow = document.getElementById('trendingRow');
   const popularRow  = document.getElementById('popularRow');
 
-  /* Show skeletons immediately so users see activity right away */
-  renderSkeletons(trendingRow, 10);
-  renderSkeletons(popularRow, 10);
+  if (trendingRow && popularRow) {
+    /* Show skeletons immediately so users see activity right away */
+    renderSkeletons(trendingRow, 10);
+    renderSkeletons(popularRow, 10);
 
-  try {
-    const [trending, popular] = await Promise.all([fetchTrending(), fetchPopular()]);
+    try {
+      const [trending, popular] = await Promise.all([fetchTrending(), fetchPopular()]);
 
-    if (trending.length > 0) {
-      startHeroRotation(trending);
-      /* Trigger staggered hero content entrance after first movie renders */
-      requestAnimationFrame(() => {
-        document.getElementById('hero')?.classList.add('hero--loaded');
-      });
+      if (trending.length > 0) {
+        startHeroRotation(trending);
+        /* Trigger staggered hero content entrance after first movie renders */
+        requestAnimationFrame(() => {
+          document.getElementById('hero')?.classList.add('hero--loaded');
+        });
+      }
+
+      renderMovieRow(trendingRow, trending);
+      renderMovieRow(popularRow, popular);
+
+      // Initialize swipe/scroll on the new rows
+      enableHorizontalScroll(trendingRow);
+      enableHorizontalScroll(popularRow);
+
+      initRevealAnimations();
+
+      /* Handle ?view=favorites deep-link */
+      if (getQueryParam('view') === 'favorites') {
+        renderFavoritesView();
+      }
+    } catch (error) {
+      console.error('Failed to initialize app content:', error);
+      const msg = '<p class="movie-row__placeholder error-msg">Could not connect to TMDb. Check your API key in api.js.</p>';
+      trendingRow.innerHTML = msg;
+      popularRow.innerHTML = msg;
     }
-
-    renderMovieRow(trendingRow, trending);
-    renderMovieRow(popularRow, popular);
-    enableHorizontalScroll(trendingRow);
-    enableHorizontalScroll(popularRow);
-
-    initRevealAnimations();
-
-
-    /* Handle ?view=favorites deep-link */
-    if (getQueryParam('view') === 'favorites') {
-      renderFavoritesView();
-    }
-  } catch (err) {
-    console.error('Failed to load movies:', err);
-    const msg = '<p class="movie-row__placeholder error-msg">Could not connect to TMDb. Check your API key in api.js.</p>';
-    trendingRow.innerHTML = msg;
-    popularRow.innerHTML  = '';
-    showToast('Failed to load movies. Check your API key.', 'error', 5000);
   }
 }
 

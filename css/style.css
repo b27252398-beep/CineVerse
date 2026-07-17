@@ -85,7 +85,6 @@ body.light-theme {
 html {
   box-sizing: border-box;
   scroll-behavior: smooth;
-  overflow-x: hidden;
 }
 
 *, *::before, *::after {
@@ -102,7 +101,6 @@ body {
   line-height:            1.6;
   -webkit-font-smoothing: antialiased;
   transition: background-color var(--transition-slow), color var(--transition-slow);
-  overflow-x: hidden;
   overflow-wrap: break-word;
 }
 
