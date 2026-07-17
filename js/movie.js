@@ -80,9 +80,14 @@ function renderCast(cast) {
 /* --------------------------------------------------------------------------
    SIMILAR MOVIES
    -------------------------------------------------------------------------- */
-function renderSimilar(movies) {
+function renderSimilar(movies, titleText = 'You Might Also Like') {
   const section = document.getElementById('similarSection');
   const row     = document.getElementById('similarRow');
+  const titleEl = section.querySelector('.movie-section__title');
+
+  if (titleEl) {
+    titleEl.textContent = titleText;
+  }
 
   if (!movies || movies.length === 0) {
     row.innerHTML = '<p class="movie-row__placeholder">No similar movies found.</p>';
@@ -280,7 +285,15 @@ async function initMovieDetail() {
 
     initTrailerModal(video);
     renderCast(cast);
-    renderSimilar(similar);
+    let finalRecommendations = similar;
+    let recommendTitle = 'You Might Also Like';
+
+    if (!finalRecommendations || finalRecommendations.length === 0) {
+      finalRecommendations = await fetchPopular();
+      recommendTitle = 'Popular Movies';
+    }
+
+    renderSimilar(finalRecommendations, recommendTitle);
 
     /* Reveal */
     loadingEl.setAttribute('hidden', '');
