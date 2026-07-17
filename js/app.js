@@ -32,8 +32,8 @@ function renderHero(movie) {
     setTimeout(() => {
       spotlight.style.backgroundImage = `
         radial-gradient(ellipse at 30% 20%, rgba(232, 178, 77, 0.2), transparent 60%),
-        linear-gradient(90deg, rgba(11,14,20,0.96) 0%, rgba(11,14,20,0.75) 55%, rgba(11,14,20,0.35) 100%),
-        linear-gradient(180deg, rgba(11,14,20,0.45) 0%, var(--color-bg) 100%),
+        linear-gradient(90deg, rgba(9,12,18,0.97) 0%, rgba(9,12,18,0.78) 55%, rgba(9,12,18,0.35) 100%),
+        linear-gradient(180deg, rgba(9,12,18,0.3) 0%, rgba(9,12,18,0.94) 100%),
         url(${getImageUrl(movie.backdrop_path, 'original')})
       `;
       spotlight.style.backgroundSize     = 'cover';

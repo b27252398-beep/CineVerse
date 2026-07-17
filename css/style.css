@@ -409,16 +409,20 @@ body.light-theme .navbar--scrolled {
 }
 
 .hero__title {
-  font-family:   var(--font-display);
-  font-size:     var(--fs-hero);
-  line-height:   1.03;
+  font-family:    var(--font-display);
+  font-size:      var(--fs-hero);
+  line-height:    1.03;
   letter-spacing: 0.01em;
-  margin-bottom: var(--space-3);
-  text-shadow:   0 2px 20px rgba(0,0,0,0.6);
+  margin-bottom:  var(--space-3);
+  /* Hero always sits over a darkened backdrop image — keep text light
+     regardless of theme so it stays readable in both dark and light mode. */
+  color:          #F0EDE6;
+  text-shadow:    0 2px 16px rgba(0,0,0,0.45);
 }
 
 .hero__overview {
-  color:         var(--color-text-muted);
+  /* Force light — dark text on dark overlay is invisible in light mode */
+  color:         rgba(240, 237, 230, 0.80);
   max-width:     54ch;
   margin-bottom: var(--space-3);
   font-size:     0.9375rem;
@@ -433,13 +437,15 @@ body.light-theme .navbar--scrolled {
   gap:           var(--space-3);
   font-family:   var(--font-mono);
   font-size:     var(--fs-small);
-  color:         var(--color-text-muted);
+  /* Force light — same reason as .hero__title above */
+  color:         rgba(240, 237, 230, 0.65);
   margin-bottom: var(--space-4);
   flex-wrap:     wrap;
 }
 
 .hero__rating {
   font-weight: 700;
+  /* rating colour classes (rating--high/mid/low) override this */
 }
 
 .hero__actions {
