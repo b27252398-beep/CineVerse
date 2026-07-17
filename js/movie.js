@@ -29,7 +29,8 @@ function renderCast(cast) {
   const row     = document.getElementById('castRow');
 
   if (!cast || cast.length === 0) {
-    section.setAttribute('hidden', '');
+    row.innerHTML = '<p class="movie-row__placeholder">No cast information available.</p>';
+    section.removeAttribute('hidden');
     return;
   }
 
@@ -43,10 +44,16 @@ function renderCast(cast) {
 
     const img = document.createElement('img');
     img.className = 'cast-card__photo';
-    img.src       = getImageUrl(person.profile_path, 'w185');
-    img.loading   = 'lazy';
-    img.alt       = '';
-    img.onerror   = function () {
+    if (person.profile_path) {
+      img.src = `https://image.tmdb.org/t/p/w185${person.profile_path}`;
+    } else {
+      img.src = 'https://placehold.co/185x278/151922/6B7280?text=?';
+    }
+    img.alt = person.name;
+    img.loading = 'lazy';
+
+    /* Error fallback for broken images */
+    img.onerror = function() {
       this.src = 'https://placehold.co/185x278/151922/6B7280?text=?';
       this.onerror = null;
     };
@@ -78,7 +85,8 @@ function renderSimilar(movies) {
   const row     = document.getElementById('similarRow');
 
   if (!movies || movies.length === 0) {
-    section.setAttribute('hidden', '');
+    row.innerHTML = '<p class="movie-row__placeholder">No similar movies found.</p>';
+    section.removeAttribute('hidden');
     return;
   }
 
