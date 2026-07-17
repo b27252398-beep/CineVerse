@@ -382,17 +382,25 @@ async function initApp() {
       enableHorizontalScroll(trendingRow);
       enableHorizontalScroll(popularRow);
 
-      initRevealAnimations();
-
       /* Handle ?view=favorites deep-link */
       if (getQueryParam('view') === 'favorites') {
         renderFavoritesView();
       }
     } catch (error) {
       console.error('Failed to initialize app content:', error);
-      const msg = '<p class="movie-row__placeholder error-msg">Could not connect to TMDb. Check your API key in api.js.</p>';
+      const msg = '<p class="movie-row__placeholder error-msg">Could not connect to TMDb. Check your API key or network connection.</p>';
       trendingRow.innerHTML = msg;
       popularRow.innerHTML = msg;
+      
+      const heroTitle = document.getElementById('heroTitle');
+      if (heroTitle) {
+        heroTitle.textContent = "CONNECTION FAILED";
+        document.getElementById('heroOverview').textContent = "Unable to load featured movies from TMDb.";
+        document.getElementById('hero')?.classList.add('hero--loaded');
+      }
+    } finally {
+      // ALWAYS reveal the sections so the error messages (or fallback content) are visible
+      initRevealAnimations();
     }
   }
 }
