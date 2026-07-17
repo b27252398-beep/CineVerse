@@ -1,0 +1,211 @@
+/* ==========================================================================
+   responsive.css — layout breakpoints for CineVerse.
+   Base styles use desktop-first with clamp() for fluid type;
+   this file handles structural layout shifts only.
+   ========================================================================== */
+
+/* ==========================================================================
+   LARGE DESKTOP (> 1320px) — expand gutter
+   ========================================================================== */
+@media (min-width: 1320px) {
+  .hero__content {
+    max-width: 780px;
+  }
+}
+
+/* ==========================================================================
+   TABLET (≤ 1024px)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .detail__content {
+    gap: var(--space-4);
+  }
+
+  .detail__poster {
+    width: 220px;
+  }
+}
+
+/* ==========================================================================
+   TABLET / SMALL LAPTOP (≤ 900px) — collapse nav, show hamburger
+   ========================================================================== */
+@media (max-width: 900px) {
+  /* Mobile nav drawer */
+  .navbar__links {
+    position:         fixed;
+    top:              var(--navbar-height);
+    left:             0;
+    right:            0;
+    flex-direction:   column;
+    background-color: var(--color-bg);
+    padding:          var(--space-4) var(--space-4) var(--space-5);
+    border-bottom:    1px solid var(--color-border);
+    gap:              var(--space-2);
+    transform:        translateY(-110%);
+    transition:       transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index:          99;
+    box-shadow:       var(--shadow-md);
+    margin-left:      0;
+  }
+
+  .navbar__links--open {
+    transform: translateY(0);
+  }
+
+  .navbar__link {
+    padding:   var(--space-2) 0;
+    font-size: 1rem;
+    border-bottom: none;
+    border-left:   3px solid transparent;
+    padding-left:  var(--space-3);
+  }
+  .navbar__link:hover,
+  .navbar__link--active {
+    border-left-color: var(--color-gold);
+    border-bottom-color: transparent;
+  }
+
+  .navbar__hamburger {
+    display: flex;
+  }
+
+  .navbar__search-input {
+    width: 130px;
+  }
+  .navbar__search-input:focus {
+    width: 160px;
+  }
+
+  /* Hero controls shift to bottom-center on tablet */
+  .hero__controls {
+    left:  50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: var(--space-4);
+  }
+}
+
+/* ==========================================================================
+   PORTRAIT TABLET / LARGE PHONE (≤ 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* ---- Detail page: stack poster above info ---- */
+  .detail__content {
+    flex-direction: column;
+    align-items:    center;
+    text-align:     center;
+    gap:            var(--space-4);
+  }
+
+  .detail__poster {
+    width:     220px;
+    max-width: 60vw;
+  }
+
+  .detail__info {
+    padding-top: 0;
+    width:       100%;
+  }
+
+  .detail__title {
+    font-size: clamp(2.2rem, 8vw, 3.2rem);
+  }
+
+  .detail__meta {
+    justify-content: center;
+  }
+
+  .detail__genres {
+    justify-content: center;
+  }
+
+  .detail__overview {
+    max-width: 100%;
+    text-align: left;
+    margin: 0 auto var(--space-4);
+  }
+
+  .detail__actions {
+    justify-content: center;
+  }
+
+  /* Hero */
+  .hero {
+    min-height: 65vh;
+    align-items: center;
+    text-align: center;
+  }
+
+  .hero__content {
+    max-width: 100%;
+  }
+
+  .hero__eyebrow {
+    justify-content: center;
+  }
+
+  .hero__overview {
+    -webkit-line-clamp: 2;
+  }
+
+  .hero__meta,
+  .hero__actions {
+    justify-content: center;
+  }
+
+  /* Scroll-to-top and toasts adjust position */
+  #toastContainer {
+    right:  var(--space-3);
+    bottom: var(--space-4);
+  }
+
+  .scroll-top {
+    left: var(--space-3);
+  }
+}
+
+/* ==========================================================================
+   PHONE (≤ 480px)
+   ========================================================================== */
+@media (max-width: 480px) {
+  /* Shrink navbar on smallest screens */
+  :root { --navbar-height: 60px; }
+
+  .navbar__logo { font-size: 1.5rem; }
+
+  /* Hide search bar on tiny screens; use a full-screen search later */
+  .navbar__search { display: none; }
+
+  /* Hero */
+  .hero {
+    min-height: 55vh;
+    padding:    var(--space-5) var(--space-3);
+  }
+
+  /* Card sizing */
+  .movie-card { width: 140px; }
+
+  /* Detail poster full-width */
+  .detail__poster {
+    width:     160px;
+    max-width: 55vw;
+  }
+
+  /* Modal close bigger touch target */
+  .modal__close {
+    top:    -48px;
+    width:  44px;
+    height: 44px;
+    font-size: 1.5rem;
+  }
+
+  /* Toasts full-width on tiny screens */
+  #toastContainer {
+    left:  var(--space-3);
+    right: var(--space-3);
+  }
+  .toast {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
