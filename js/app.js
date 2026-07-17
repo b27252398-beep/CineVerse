@@ -211,6 +211,19 @@ function initRevealAnimations() {
 }
 
 /* --------------------------------------------------------------------------
+   SHARED VIEW HELPER — restores trending/popular, hides search/favorites
+   Called by Home, Trending, and Popular nav links.
+   -------------------------------------------------------------------------- */
+function showMainSections() {
+  document.getElementById('searchResults').setAttribute('hidden', '');
+  document.getElementById('trending').removeAttribute('hidden');
+  document.getElementById('popular').removeAttribute('hidden');
+  // Clear the search input so it doesn't look like results are still active
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+}
+
+/* --------------------------------------------------------------------------
    FAVORITES VIEW
    -------------------------------------------------------------------------- */
 function renderFavoritesView() {
@@ -236,6 +249,43 @@ function initFavoritesLink() {
 }
 
 /* --------------------------------------------------------------------------
+   NAV LINKS — Trending, Popular, and Home
+   These need explicit click handlers because the sections can be hidden
+   (by a search or favorites view). A plain href="#trending" won't scroll
+   to a hidden element, so we unhide first, then scroll.
+   -------------------------------------------------------------------------- */
+function initNavLinks() {
+  // Home link — restore trending/popular view and scroll to top
+  document.querySelector('.navbar__link[href="index.html"]')?.addEventListener('click', (e) => {
+    // Only intercept if we're already on index.html (not navigating from movie page)
+    if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
+      e.preventDefault();
+      showMainSections();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
+  // Trending link
+  document.querySelector('.navbar__link[href="#trending"]')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showMainSections();
+    // Small delay so the section is visible before scrollIntoView fires
+    setTimeout(() => {
+      document.getElementById('trending')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  });
+
+  // Popular link
+  document.querySelector('.navbar__link[href="#popular"]')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showMainSections();
+    setTimeout(() => {
+      document.getElementById('popular')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  });
+}
+
+/* --------------------------------------------------------------------------
    MAIN BOOT — runs once DOM is ready
    -------------------------------------------------------------------------- */
 async function initApp() {
@@ -244,6 +294,7 @@ async function initApp() {
 
   initTheme();
   initNavbar();
+  initNavLinks();      // ← fixes Trending/Popular/Home nav click behaviour
   initSearch();
   initFavoritesLink();
   initScrollToTop();
