@@ -82,18 +82,19 @@ body.light-theme {
 /* ==========================================================================
    3. RESET / BASE
    ========================================================================== */
-*, *::before, *::after {
-  margin:     0;
-  padding:    0;
+html {
   box-sizing: border-box;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
-html {
-  scroll-behavior: smooth;
-  font-size: 16px;
+*, *::before, *::after {
+  box-sizing: inherit;
 }
 
 body {
+  margin:                 0;
+  padding:                0;
   background-color:       var(--color-bg);
   color:                  var(--color-text);
   font-family:            var(--font-body);
@@ -101,6 +102,8 @@ body {
   line-height:            1.6;
   -webkit-font-smoothing: antialiased;
   transition: background-color var(--transition-slow), color var(--transition-slow);
+  overflow-x: hidden;
+  overflow-wrap: break-word;
 }
 
 /* Page transition overlay */
@@ -573,16 +576,25 @@ body.light-theme .navbar--scrolled {
   display:    flex;
   gap:        var(--space-3);
   overflow-x: auto;
-  padding-bottom: var(--space-3);
-  cursor:     grab;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-gold-dim) transparent;
+  padding-bottom: var(--space-4);
+  scrollbar-width: none;
+  cursor: grab;
   scroll-snap-type: x mandatory;
 }
 .movie-row:active { cursor: grabbing; }
-.movie-row::-webkit-scrollbar { height: 4px; }
-.movie-row::-webkit-scrollbar-track { background: transparent; }
-.movie-row::-webkit-scrollbar-thumb { background: var(--color-gold-dim); border-radius: 2px; }
+.movie-row::-webkit-scrollbar { display: none; }
+
+/* Grid variant for Search Results and Favorites */
+.movie-row--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-4);
+  overflow-x: visible;
+  padding-bottom: 0;
+}
+.movie-row--grid .movie-card {
+  width: 100%;
+}
 
 .movie-row__placeholder {
   color:         var(--color-text-muted);

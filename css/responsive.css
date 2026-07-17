@@ -185,6 +185,14 @@
 
   /* Card sizing */
   .movie-card { width: 140px; }
+  
+  .movie-row--grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+  .movie-row--grid .movie-card {
+    width: 100%;
+  }
 
   /* Detail poster full-width */
   .detail__poster {
