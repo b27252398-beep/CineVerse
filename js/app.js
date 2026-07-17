@@ -195,19 +195,34 @@ function initScrollToTop() {
 }
 
 /* --------------------------------------------------------------------------
-   INTERSECTION OBSERVER — section entrance animations
+   INTERSECTION OBSERVER — section entrance animations + footer reveal
    -------------------------------------------------------------------------- */
 function initRevealAnimations() {
-  const io = new IntersectionObserver((entries) => {
+  // Sections
+  const sectionIO = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add('section--revealed');
-        io.unobserve(entry.target);
+        sectionIO.unobserve(entry.target);
       }
     });
   }, { threshold: 0.1 });
 
-  document.querySelectorAll('.movie-section').forEach((el) => io.observe(el));
+  document.querySelectorAll('.movie-section').forEach((el) => sectionIO.observe(el));
+
+  // Footer
+  const footer = document.querySelector('.footer');
+  if (footer) {
+    const footerIO = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          footer.classList.add('footer--visible');
+          footerIO.unobserve(footer);
+        }
+      });
+    }, { threshold: 0.15 });
+    footerIO.observe(footer);
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -286,6 +301,47 @@ function initNavLinks() {
 }
 
 /* --------------------------------------------------------------------------
+   INTERACTIVE ANIMATIONS
+   Hero parallax, button ripple, rating count-up.
+   -------------------------------------------------------------------------- */
+function initAnimations() {
+  /* ---- Hero mouse parallax ---- */
+  const heroEl    = document.getElementById('hero');
+  const spotlight = document.querySelector('.hero__spotlight');
+
+  if (heroEl && spotlight) {
+    heroEl.addEventListener('mousemove', (e) => {
+      const rect = heroEl.getBoundingClientRect();
+      const x    = (e.clientX - rect.left)  / rect.width  - 0.5;
+      const y    = (e.clientY - rect.top)   / rect.height - 0.5;
+      spotlight.style.transform = `scale(1.06) translate(${x * -14}px, ${y * -10}px)`;
+    });
+    heroEl.addEventListener('mouseleave', () => {
+      spotlight.style.transform = 'scale(1) translate(0px, 0px)';
+    });
+  }
+
+  /* ---- Button ripple — event delegation on the whole document ---- */
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn');
+    if (!btn) return;
+
+    const ripple = document.createElement('span');
+    ripple.className = 'btn__ripple';
+
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.width  = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left   = `${e.clientX - rect.left - size / 2}px`;
+    ripple.style.top    = `${e.clientY - rect.top  - size / 2}px`;
+
+    btn.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+  });
+}
+
+/* --------------------------------------------------------------------------
    MAIN BOOT — runs once DOM is ready
    -------------------------------------------------------------------------- */
 async function initApp() {
@@ -298,6 +354,7 @@ async function initApp() {
   initSearch();
   initFavoritesLink();
   initScrollToTop();
+  initAnimations();    // ← parallax, ripple, reveal effects
 
   const trendingRow = document.getElementById('trendingRow');
   const popularRow  = document.getElementById('popularRow');
@@ -311,6 +368,10 @@ async function initApp() {
 
     if (trending.length > 0) {
       startHeroRotation(trending);
+      /* Trigger staggered hero content entrance after first movie renders */
+      requestAnimationFrame(() => {
+        document.getElementById('hero')?.classList.add('hero--loaded');
+      });
     }
 
     renderMovieRow(trendingRow, trending);
@@ -319,6 +380,7 @@ async function initApp() {
     enableHorizontalScroll(popularRow);
 
     initRevealAnimations();
+
 
     /* Handle ?view=favorites deep-link */
     if (getQueryParam('view') === 'favorites') {

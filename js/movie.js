@@ -12,10 +12,11 @@ function renderGenres(genres) {
   container.innerHTML = '';
   if (!genres || genres.length === 0) return;
 
-  genres.forEach((g) => {
+  genres.forEach((g, i) => {
     const pill = document.createElement('span');
     pill.className   = 'detail__genre-pill';
     pill.textContent = g.name;
+    pill.style.setProperty('--pill-index', i); // drives stagger in animations.css
     container.appendChild(pill);
   });
 }
@@ -35,9 +36,10 @@ function renderCast(cast) {
   row.innerHTML = '';
   const frag = document.createDocumentFragment();
 
-  cast.forEach((person) => {
+  cast.forEach((person, i) => {
     const card = document.createElement('div');
     card.className = 'cast-card';
+    card.style.setProperty('--card-index', i); // drives stagger in animations.css
 
     const img = document.createElement('img');
     img.className = 'cast-card__photo';
@@ -276,8 +278,54 @@ async function initMovieDetail() {
     loadingEl.setAttribute('hidden', '');
     detailEl.removeAttribute('hidden');
 
-    /* Animate in */
-    requestAnimationFrame(() => detailEl.classList.add('detail--revealed'));
+    /* Animate in + rating count-up */
+    requestAnimationFrame(() => {
+      detailEl.classList.add('detail--revealed');
+
+      // Count-up animation for the rating badge
+      const ratingEl = detailEl.querySelector('.detail__rating');
+      if (ratingEl) {
+        const target = movie.vote_average || 0;
+        const prefix = '\u2605 ';
+        let start = null;
+        const duration = 950;
+        function countUp(ts) {
+          if (!start) start = ts;
+          const progress = Math.min((ts - start) / duration, 1);
+          const eased    = 1 - Math.pow(1 - progress, 3);
+          ratingEl.textContent = `${prefix}${(target * eased).toFixed(1)}`;
+          if (progress < 1) requestAnimationFrame(countUp);
+        }
+        requestAnimationFrame(countUp);
+      }
+    });
+
+    /* Button ripple — delegated */
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn');
+      if (!btn) return;
+      const ripple  = document.createElement('span');
+      ripple.className = 'btn__ripple';
+      const rect = btn.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      ripple.style.width  = `${size}px`;
+      ripple.style.height = `${size}px`;
+      ripple.style.left   = `${e.clientX - rect.left - size / 2}px`;
+      ripple.style.top    = `${e.clientY - rect.top  - size / 2}px`;
+      btn.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+    });
+
+    /* Footer reveal */
+    const footer = document.querySelector('.footer');
+    if (footer) {
+      const footerIO = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) { footer.classList.add('footer--visible'); footerIO.disconnect(); }
+        });
+      }, { threshold: 0.15 });
+      footerIO.observe(footer);
+    }
 
   } catch (err) {
     console.error('Failed to load movie:', err);

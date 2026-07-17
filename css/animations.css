@@ -1,0 +1,285 @@
+/* ==========================================================================
+   animations.css — all motion design for CineVerse.
+   Loaded last so it can override base styles where needed.
+   Respects prefers-reduced-motion globally at the bottom.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. KEYFRAMES
+   ========================================================================== */
+
+/* Fade up — generic entrance used by hero content, sections, pills */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* Fade in — pure opacity, no movement */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Scale + fade — used for cards */
+@keyframes cardEntrance {
+  from { opacity: 0; transform: translateY(18px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+/* Ripple — button click wave */
+@keyframes ripple {
+  from { transform: scale(0);   opacity: 0.55; }
+  to   { transform: scale(4.5); opacity: 0;    }
+}
+
+/* Modal pop — springy scale */
+@keyframes modalPop {
+  0%   { opacity: 0; transform: scale(0.82) translateY(12px); }
+  70%  { opacity: 1; transform: scale(1.02) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* Filmstrip scroll — sprocket holes drift right */
+@keyframes filmScroll {
+  from { background-position: 0 0;    }
+  to   { background-position: 24px 0; }
+}
+
+/* Underline draw — section title accent line */
+@keyframes drawLine {
+  from { width: 0;    }
+  to   { width: 52px; }
+}
+
+/* Bounce — hero navigation arrows */
+@keyframes arrowBounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+
+/* Pulse glow — scroll-to-top button idle state */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 4px 18px var(--color-gold-glow); }
+  50%       { box-shadow: 0 4px 28px rgba(232,178,77,0.5); }
+}
+
+/* Shimmer sweep — used on hero eyebrow bar */
+@keyframes shimmerSweep {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* Count-up handled in JS — no keyframe needed */
+
+/* ==========================================================================
+   2. HERO SECTION — staggered content entrance
+   Fires when .hero--loaded class is added by JS.
+   ========================================================================== */
+.hero--loaded .hero__eyebrow {
+  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
+}
+.hero--loaded .hero__title {
+  animation: fadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+}
+.hero--loaded .hero__overview {
+  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.32s both;
+}
+.hero--loaded .hero__meta {
+  animation: fadeUp 0.5s  cubic-bezier(0.22, 1, 0.36, 1) 0.44s both;
+}
+.hero--loaded .hero__actions {
+  animation: fadeUp 0.5s  cubic-bezier(0.22, 1, 0.36, 1) 0.56s both;
+}
+.hero--loaded .hero__controls {
+  animation: fadeIn 0.6s ease 0.75s both;
+}
+
+/* Eyebrow bar — shimmer sweep on entrance */
+.hero__eyebrow::before {
+  background: linear-gradient(
+    90deg,
+    var(--color-gold),
+    #FFD97D,
+    var(--color-gold)
+  );
+  background-size: 200% auto;
+  animation: shimmerSweep 2.5s linear infinite;
+}
+
+/* ==========================================================================
+   3. MOVIE CARDS — staggered entrance via --card-index CSS var
+   ========================================================================== */
+.movie-card {
+  animation: cardEntrance 0.45s cubic-bezier(0.34, 1.2, 0.64, 1)
+             calc(var(--card-index, 0) * 55ms) both;
+}
+
+/* Poster zoom on card hover */
+.movie-card:hover .movie-card__poster {
+  transform: scale(1.06);
+  transition: transform 0.4s ease;
+}
+.movie-card__poster {
+  transition: transform 0.4s ease, filter 0.2s ease;
+}
+
+/* Badge heartbeat on card hover */
+.movie-card:hover .movie-card__badge {
+  animation: badgeBeat 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes badgeBeat {
+  0%   { transform: scale(1);    }
+  50%  { transform: scale(1.18); }
+  100% { transform: scale(1);    }
+}
+
+/* ==========================================================================
+   4. SECTION TITLES — underline draws in when section is revealed
+   ========================================================================== */
+.movie-section__title {
+  position: relative;
+  display:  inline-block;
+}
+.movie-section__title::after {
+  content:          '';
+  position:         absolute;
+  bottom:           -6px;
+  left:             0;
+  height:           2px;
+  width:            0;
+  background:       linear-gradient(90deg, var(--color-gold), transparent);
+  border-radius:    1px;
+  transition:       width 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+}
+.section--revealed .movie-section__title::after {
+  width: 52px;
+}
+
+/* ==========================================================================
+   5. FILMSTRIP — subtle horizontal drift
+   ========================================================================== */
+.filmstrip {
+  animation: filmScroll 0.55s steps(1, end) infinite;
+}
+
+/* ==========================================================================
+   6. NAVBAR — fade-in slide down on page load
+   ========================================================================== */
+.navbar {
+  animation: navbarIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes navbarIn {
+  from { opacity: 0; transform: translateY(-100%); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+/* ==========================================================================
+   7. BUTTONS — ripple wave on click
+   ========================================================================== */
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn__ripple {
+  position:      absolute;
+  border-radius: 50%;
+  background:    rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+  animation:     ripple 0.6s linear forwards;
+}
+
+/* Gold button ripple is darker */
+.btn--gold .btn__ripple {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/* ==========================================================================
+   8. HERO NAVIGATION ARROWS
+   ========================================================================== */
+.hero__arrow:hover {
+  animation: arrowBounce 0.5s ease infinite;
+}
+
+/* ==========================================================================
+   9. SCROLL-TO-TOP BUTTON — idle glow pulse
+   ========================================================================== */
+.scroll-top--visible {
+  animation: glowPulse 2.5s ease-in-out infinite;
+}
+/* Pause pulse while hovered */
+.scroll-top:hover {
+  animation: none;
+}
+
+/* ==========================================================================
+   10. TRAILER MODAL — springy pop entrance
+   ========================================================================== */
+.modal[data-open="true"] .modal__content {
+  animation: modalPop 0.4s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+/* ==========================================================================
+   11. DETAIL PAGE — genre pills stagger
+   ========================================================================== */
+.detail__genre-pill {
+  animation: fadeUp 0.35s cubic-bezier(0.22, 1, 0.36, 1)
+             calc(var(--pill-index, 0) * 60ms) both;
+}
+
+/* Cast cards stagger */
+.cast-card {
+  animation: cardEntrance 0.4s cubic-bezier(0.34, 1.2, 0.64, 1)
+             calc(var(--card-index, 0) * 45ms) both;
+}
+
+/* Detail section reveal */
+.detail--revealed {
+  animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ==========================================================================
+   12. SEARCH SUGGESTIONS — each item slides in
+   ========================================================================== */
+.search-suggestions__item {
+  animation: fadeUp 0.25s cubic-bezier(0.22, 1, 0.36, 1)
+             calc(var(--item-index, 0) * 40ms) both;
+}
+
+/* ==========================================================================
+   13. TOAST — already has slide, add slight scale pop
+   ========================================================================== */
+.toast--visible {
+  animation: toastPop 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+@keyframes toastPop {
+  from { opacity: 0; transform: translateX(30px) scale(0.9); }
+  to   { opacity: 1; transform: translateX(0)    scale(1);   }
+}
+
+/* ==========================================================================
+   14. FOOTER — fade in on scroll reveal
+   ========================================================================== */
+.footer {
+  opacity:    0;
+  transform:  translateY(16px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.footer--visible {
+  opacity:   1;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   15. PREFERS-REDUCED-MOTION — global override
+   Users who prefer less motion get instant transitions only.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration:        0.01ms !important;
+    animation-iteration-count: 1      !important;
+    transition-duration:       0.01ms !important;
+  }
+}

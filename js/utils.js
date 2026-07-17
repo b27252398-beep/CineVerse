@@ -92,12 +92,14 @@ function renderSkeletons(containerEl, count = 10) {
 
 /* --------------------------------------------------------------------------
    MOVIE CARD — XSS-safe build using DOM methods, not innerHTML for data.
+   index param controls stagger delay via --card-index CSS custom property.
    -------------------------------------------------------------------------- */
-function createMovieCard(movie) {
+function createMovieCard(movie, index = 0) {
   const card = document.createElement('a');
   card.href       = `movie.html?id=${movie.id}`;
   card.className  = 'movie-card';
   card.setAttribute('data-id', movie.id);
+  card.style.setProperty('--card-index', index); // drives animation stagger
 
   /* Poster */
   const img = document.createElement('img');
@@ -162,7 +164,8 @@ function renderMovieRow(containerEl, movies) {
   }
 
   const frag = document.createDocumentFragment();
-  movies.forEach((m) => frag.appendChild(createMovieCard(m)));
+  // Pass index so each card gets a unique --card-index for stagger animation
+  movies.forEach((m, i) => frag.appendChild(createMovieCard(m, i)));
   containerEl.appendChild(frag);
 }
 
