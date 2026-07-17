@@ -173,8 +173,9 @@
 
   .navbar__logo { font-size: 1.5rem; }
 
-  /* Hide search bar on tiny screens; use a full-screen search later */
-  .navbar__search { display: none; }
+  /* Shrink search bar instead of hiding it */
+  .navbar__search-input { width: 90px; font-size: 13px; }
+  .navbar__search-input:focus { width: 130px; }
 
   /* Hero */
   .hero {
