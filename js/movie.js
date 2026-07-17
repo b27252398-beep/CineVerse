@@ -337,6 +337,17 @@ async function initMovieDetail() {
       ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
     });
 
+    /* Reveal sections on scroll */
+    const sectionIO = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('section--revealed');
+          sectionIO.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.movie-section').forEach((el) => sectionIO.observe(el));
+
     /* Footer reveal */
     const footer = document.querySelector('.footer');
     if (footer) {
