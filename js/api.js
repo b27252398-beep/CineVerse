@@ -8,7 +8,7 @@
 /* !! Replace with your own free TMDb API key: themoviedb.org -> Settings -> API */
 const TMDB_API_KEY = 'e397c28c621902e36c15f5808fb62719';
 
-const BASE_URL = 'https://api.themoviedb.org/3';
+const BASE_URL = 'https://api.tmdb.org/3';
 
 /**
  * Internal helper: builds the URL and handles the fetch + error pattern
