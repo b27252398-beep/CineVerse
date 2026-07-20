@@ -15,6 +15,11 @@ async function initAuth() {
   const authPassword = document.getElementById('authPassword');
   const authErrorMsg = document.getElementById('authErrorMsg');
 
+  if (typeof supabase === 'undefined') {
+    console.error("Supabase client is not initialized.");
+    return; // Exit early so the rest of the app doesn't crash
+  }
+
   // Check initial session
   const { data: { session } } = await supabase.auth.getSession();
   updateAuthState(session?.user || null);

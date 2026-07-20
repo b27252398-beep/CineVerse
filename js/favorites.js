@@ -7,7 +7,7 @@ let localFavoritesCache = [];
 
 window.loadFavoritesFromCloud = async function() {
   const user = getCurrentUser();
-  if (!user) {
+  if (!user || typeof supabase === 'undefined') {
     localFavoritesCache = [];
     return;
   }
@@ -44,11 +44,13 @@ async function addFavorite(movie) {
   localFavoritesCache.push(movie);
   
   // Sync to Cloud
-  await supabase.from('favorites').insert([{
-    user_id: user.id,
-    movie_id: movie.id,
-    movie_data: movie
-  }]);
+  if (typeof supabase !== 'undefined') {
+    await supabase.from('favorites').insert([{
+      user_id: user.id,
+      movie_id: movie.id,
+      movie_data: movie
+    }]);
+  }
 }
 
 async function removeFavorite(movieId) {
@@ -59,7 +61,9 @@ async function removeFavorite(movieId) {
   localFavoritesCache = localFavoritesCache.filter((m) => m.id !== movieId);
   
   // Sync to Cloud
-  await supabase.from('favorites').delete().eq('movie_id', movieId).eq('user_id', user.id);
+  if (typeof supabase !== 'undefined') {
+    await supabase.from('favorites').delete().eq('movie_id', movieId).eq('user_id', user.id);
+  }
 }
 
 /**
