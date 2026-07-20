@@ -43,7 +43,9 @@ async function toggleHistory(movie) {
   if (alreadyWatched) {
     localHistoryCache = localHistoryCache.filter(m => m.id !== movie.id);
     if (typeof supabase !== 'undefined') {
-      supabase.from('watch_history').delete().eq('movie_id', movie.id).eq('user_id', user.id).then();
+      supabase.from('watch_history').delete().eq('movie_id', movie.id).eq('user_id', user.id).then(({error}) => {
+         if (error) console.error('Supabase history delete error:', error);
+      });
     }
     if (typeof showToast === 'function') showToast('Removed from Watch History');
   } else {
@@ -53,7 +55,12 @@ async function toggleHistory(movie) {
         user_id: user.id,
         movie_id: movie.id,
         movie_data: movie
-      }]).then();
+      }]).then(({error}) => {
+         if (error) {
+            console.error('Supabase history insert error:', error);
+            if (typeof showToast === 'function') showToast('Failed to save history: ' + error.message, 'error');
+         }
+      });
     }
     if (typeof showToast === 'function') showToast('Marked as Watched');
   }

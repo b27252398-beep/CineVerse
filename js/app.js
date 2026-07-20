@@ -391,20 +391,32 @@ function initNavLinks() {
   // Trending link
   document.querySelector('.navbar__link[href="#trending"]')?.addEventListener('click', (e) => {
     e.preventDefault();
-    showMainSections();
-    // Small delay so the section is visible before scrollIntoView fires
-    setTimeout(() => {
-      document.getElementById('trending')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 50);
+    const bollywoodHub = document.getElementById('bollywoodHubSection');
+    if (bollywoodHub && !bollywoodHub.hasAttribute('hidden')) {
+      // Stay in Bollywood Hub and scroll to its Trending section
+      document.getElementById('bollywoodTrendingRow')?.parentElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      showMainSections();
+      // Small delay so the section is visible before scrollIntoView fires
+      setTimeout(() => {
+        document.getElementById('trending')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
   });
 
   // Popular link
   document.querySelector('.navbar__link[href="#popular"]')?.addEventListener('click', (e) => {
     e.preventDefault();
-    showMainSections();
-    setTimeout(() => {
-      document.getElementById('popular')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 50);
+    const bollywoodHub = document.getElementById('bollywoodHubSection');
+    if (bollywoodHub && !bollywoodHub.hasAttribute('hidden')) {
+      // Stay in Bollywood Hub and scroll to its Top Rated (Popular) section
+      document.getElementById('bollywoodTopRatedRow')?.parentElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      showMainSections();
+      setTimeout(() => {
+        document.getElementById('popular')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
   });
 
   // Bollywood link
@@ -476,6 +488,7 @@ async function initApp() {
   initFilters();
   initModal();
   initFavoritesLink();
+  initHistoryLink();
   initScrollToTop();
   initAnimations();    // parallax, ripple, reveal effects
 

@@ -45,11 +45,15 @@ async function addFavorite(movie) {
   
   // Sync to Cloud
   if (typeof supabase !== 'undefined') {
-    await supabase.from('favorites').insert([{
+    const { error } = await supabase.from('favorites').insert([{
       user_id: user.id,
       movie_id: movie.id,
       movie_data: movie
     }]);
+    if (error) {
+      console.error('Supabase favorites insert error:', error);
+      if (typeof showToast === 'function') showToast('Failed to save to database: ' + error.message, 'error');
+    }
   }
 }
 

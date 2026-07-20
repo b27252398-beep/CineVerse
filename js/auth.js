@@ -88,16 +88,7 @@ async function initAuth() {
       authLoginBtn.textContent = 'Logging in...';
       authLoginBtn.disabled = true;
 
-      // SECRET TEST MODE: Bypass Supabase completely to avoid rate limits
-      if (authEmail.value === 'test@test.com' && authPassword.value === 'password') {
-        const dummyUser = { id: 'test-user-123', email: 'test@test.com' };
-        updateAuthState(dummyUser);
-        closeAuthModal();
-        if (typeof showToast === 'function') showToast("Logged in successfully via Test Mode!");
-        authLoginBtn.textContent = 'Login';
-        authLoginBtn.disabled = false;
-        return;
-      }
+      // Removed Test Mode bypass since it breaks Supabase UUID column types and RLS policies
       
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -154,15 +145,23 @@ async function initAuth() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       updateAuthState(session?.user || null);
+      
+      // Fetch data immediately if already logged in on page load
+      if (session?.user) {
+        if (window.loadFavoritesFromCloud) window.loadFavoritesFromCloud();
+        if (window.loadHistoryFromCloud) window.loadHistoryFromCloud();
+      }
 
       supabase.auth.onAuthStateChange((event, session) => {
         updateAuthState(session?.user || null);
         if (event === 'SIGNED_IN') {
           closeAuthModal();
           if (window.loadFavoritesFromCloud) window.loadFavoritesFromCloud();
+          if (window.loadHistoryFromCloud) window.loadHistoryFromCloud();
         } else if (event === 'SIGNED_OUT') {
           if (window.clearFavoritesCache) window.clearFavoritesCache();
-          if (window.location.hash === '#favorites') {
+          if (window.clearHistoryCache) window.clearHistoryCache();
+          if (window.location.hash === '#favorites' || window.location.hash === '#history') {
              window.location.hash = '';
              document.querySelector('.navbar__link[href="index.html"]')?.click();
           }
