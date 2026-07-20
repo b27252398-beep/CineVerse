@@ -32,6 +32,7 @@
         <a href="index.html"           class="navbar__link navbar__link--active">Home</a>
         <a href="#trending"            class="navbar__link">Trending</a>
         <a href="#popular"             class="navbar__link">Popular</a>
+        <a href="#bollywood"           class="navbar__link" id="bollywoodLink">Bollywood</a>
         <a href="#"                    class="navbar__link" id="favoritesLink">Favorites</a>
       </nav>
 
@@ -113,6 +114,17 @@
     </div>
     <div class="filters-panel" id="filtersPanel" hidden>
       <div class="filter-group">
+        <label for="filterLang">Language</label>
+        <select id="filterLang">
+          <option value="">All Languages</option>
+          <option value="en">English</option>
+          <option value="hi">Hindi (Bollywood)</option>
+          <option value="es">Spanish</option>
+          <option value="ko">Korean</option>
+          <option value="ja">Japanese</option>
+        </select>
+      </div>
+      <div class="filter-group">
         <label for="filterGenre">Genre</label>
         <select id="filterGenre">
           <option value="">All Genres</option>
@@ -144,6 +156,33 @@
       <h2 class="movie-section__title" id="discoverResultsTitle">Discovery Results</h2>
     </div>
     <div class="movie-row movie-row--grid" id="discoverResultsRow" role="list"></div>
+  </section>
+
+  <!-- ============ BOLLYWOOD HUB ============ -->
+  <section id="bollywoodHubSection" hidden>
+    <!-- Bollywood Trending -->
+    <section class="movie-section" aria-label="Trending Bollywood">
+      <div class="movie-section__header">
+        <h2 class="movie-section__title">Trending Bollywood</h2>
+      </div>
+      <div class="movie-row" id="bollywoodTrendingRow" role="list"></div>
+    </section>
+
+    <!-- Bollywood Top Rated -->
+    <section class="movie-section" aria-label="Top Rated Bollywood">
+      <div class="movie-section__header">
+        <h2 class="movie-section__title">Top Rated Bollywood</h2>
+      </div>
+      <div class="movie-row" id="bollywoodTopRatedRow" role="list"></div>
+    </section>
+
+    <!-- Bollywood Action & Thriller -->
+    <section class="movie-section" aria-label="Bollywood Action">
+      <div class="movie-section__header">
+        <h2 class="movie-section__title">Bollywood Action & Thrillers</h2>
+      </div>
+      <div class="movie-row" id="bollywoodActionRow" role="list"></div>
+    </section>
   </section>
 
   <!-- ============ TRENDING ============ -->

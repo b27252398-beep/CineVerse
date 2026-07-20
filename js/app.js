@@ -220,6 +220,7 @@ function showMainSections() {
   document.getElementById('trending').removeAttribute('hidden');
   document.getElementById('popular').removeAttribute('hidden');
   document.getElementById('hero')?.removeAttribute('hidden');
+  document.getElementById('bollywoodHubSection')?.setAttribute('hidden', '');
   // Clear the search input so it doesn't look like results are still active
   const searchInput = document.getElementById('searchInput');
   if (searchInput) searchInput.value = '';
@@ -250,6 +251,7 @@ function renderFavoritesView() {
   document.getElementById('popular')?.setAttribute('hidden', '');
   document.getElementById('hero')?.setAttribute('hidden', '');
   document.getElementById('discoverResultsSection')?.setAttribute('hidden', '');
+  document.getElementById('bollywoodHubSection')?.setAttribute('hidden', '');
   
   // Also clear search bar if it was used
   const searchInput = document.getElementById('searchInput');
@@ -263,6 +265,61 @@ function initFavoritesLink() {
     e.preventDefault();
     renderFavoritesView();
   });
+}
+
+/* --------------------------------------------------------------------------
+   BOLLYWOOD HUB VIEW
+   -------------------------------------------------------------------------- */
+async function renderBollywoodHubView() {
+  const hubSection = document.getElementById('bollywoodHubSection');
+  const trendingRow = document.getElementById('bollywoodTrendingRow');
+  const topRatedRow = document.getElementById('bollywoodTopRatedRow');
+  const actionRow   = document.getElementById('bollywoodActionRow');
+
+  if (!hubSection) return;
+
+  // Hide other sections
+  document.getElementById('searchResults')?.setAttribute('hidden', '');
+  document.getElementById('discoverResultsSection')?.setAttribute('hidden', '');
+  document.getElementById('trending')?.setAttribute('hidden', '');
+  document.getElementById('popular')?.setAttribute('hidden', '');
+  document.getElementById('hero')?.setAttribute('hidden', '');
+
+  // Clear search bar
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+
+  hubSection.removeAttribute('hidden');
+
+  // Load content if empty
+  if (trendingRow.children.length === 0) {
+    renderSkeletons(trendingRow, 10);
+    renderSkeletons(topRatedRow, 10);
+    renderSkeletons(actionRow, 10);
+
+    try {
+      const [trending, topRated, action] = await Promise.all([
+        fetchBollywoodTrending(),
+        fetchBollywoodTopRated(),
+        fetchBollywoodAction()
+      ]);
+
+      renderMovieRow(trendingRow, trending);
+      renderMovieRow(topRatedRow, topRated);
+      renderMovieRow(actionRow, action);
+
+      enableHorizontalScroll(trendingRow);
+      enableHorizontalScroll(topRatedRow);
+      enableHorizontalScroll(actionRow);
+    } catch (err) {
+      console.error(err);
+      trendingRow.innerHTML = '<p class="movie-row__placeholder error-msg">Failed to load Bollywood content.</p>';
+      topRatedRow.innerHTML = '<p class="movie-row__placeholder error-msg">Failed to load Bollywood content.</p>';
+      actionRow.innerHTML = '<p class="movie-row__placeholder error-msg">Failed to load Bollywood content.</p>';
+    }
+  }
+
+  hubSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* --------------------------------------------------------------------------
@@ -299,6 +356,12 @@ function initNavLinks() {
     setTimeout(() => {
       document.getElementById('popular')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 50);
+  });
+
+  // Bollywood link
+  document.getElementById('bollywoodLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    renderBollywoodHubView();
   });
 }
 

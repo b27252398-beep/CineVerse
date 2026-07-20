@@ -47,6 +47,9 @@ async function initFilters() {
   // Apply Filters
   applyBtn.addEventListener('click', async () => {
     const filters = {};
+    const langSel = document.getElementById('filterLang');
+    
+    if (langSel && langSel.value) filters.with_original_language = langSel.value;
     if (genreSel.value) filters.with_genres = genreSel.value;
     if (yearSel.value) filters.primary_release_year = yearSel.value;
     if (document.getElementById('filterSort').value) {
@@ -57,8 +60,10 @@ async function initFilters() {
     const resultsRow     = document.getElementById('discoverResultsRow');
     
     // UI state
-    document.getElementById('trending').setAttribute('hidden', '');
-    document.getElementById('popular').setAttribute('hidden', '');
+    document.getElementById('hero')?.setAttribute('hidden', '');
+    document.getElementById('trending')?.setAttribute('hidden', '');
+    document.getElementById('popular')?.setAttribute('hidden', '');
+    document.getElementById('bollywoodHubSection')?.setAttribute('hidden', '');
     resultsSection.removeAttribute('hidden');
     
     renderSkeletons(resultsRow, 10);

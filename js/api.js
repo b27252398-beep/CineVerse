@@ -40,6 +40,39 @@ async function fetchPopular(page = 1) {
   return data.results;
 }
 
+/* --- BOLLYWOOD SPECIFIC FUNCTIONS --- */
+async function fetchBollywoodTrending(page = 1) {
+  const data = await tmdbFetch('/discover/movie', {
+    with_original_language: 'hi',
+    sort_by: 'popularity.desc',
+    include_adult: false,
+    page
+  });
+  return data.results;
+}
+
+async function fetchBollywoodTopRated(page = 1) {
+  const data = await tmdbFetch('/discover/movie', {
+    with_original_language: 'hi',
+    sort_by: 'vote_average.desc',
+    'vote_count.gte': 100,
+    include_adult: false,
+    page
+  });
+  return data.results;
+}
+
+async function fetchBollywoodAction(page = 1) {
+  const data = await tmdbFetch('/discover/movie', {
+    with_original_language: 'hi',
+    with_genres: '28,53', // Action and Thriller
+    sort_by: 'popularity.desc',
+    include_adult: false,
+    page
+  });
+  return data.results;
+}
+
 async function fetchMovieDetails(id) {
   return tmdbFetch(`/movie/${id}`, { append_to_response: 'credits,videos,recommendations,similar' });
 }
