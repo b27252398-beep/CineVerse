@@ -3,34 +3,63 @@
    Also owns the global Toast notification system (used by other modules).
    ========================================================================== */
 
-const FAVORITES_KEY = 'cineverse_favorites';
+let localFavoritesCache = [];
+
+window.loadFavoritesFromCloud = async function() {
+  const user = getCurrentUser();
+  if (!user) {
+    localFavoritesCache = [];
+    return;
+  }
+  const { data, error } = await supabase.from('favorites').select('movie_data');
+  if (!error && data) {
+    localFavoritesCache = data.map(d => d.movie_data);
+    // Refresh the UI if they are on the favorites page
+    if (document.getElementById('searchResults') && !document.getElementById('searchResults').hasAttribute('hidden')) {
+      if (typeof renderFavoritesView === 'function') renderFavoritesView();
+    }
+  }
+}
+
+window.clearFavoritesCache = function() {
+  localFavoritesCache = [];
+}
 
 /* ---------- Storage helpers ---------- */
 
 function getFavorites() {
-  try {
-    const raw = localStorage.getItem(FAVORITES_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+  return localFavoritesCache;
 }
 
 function isFavorite(movieId) {
-  return getFavorites().some((m) => m.id === movieId);
+  return localFavoritesCache.some((m) => m.id === movieId);
 }
 
-function _saveFavorites(list) {
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify(list));
+async function addFavorite(movie) {
+  const user = getCurrentUser();
+  if (!user) return;
+  if (localFavoritesCache.some((m) => m.id === movie.id)) return;
+  
+  // Optimistic UI update
+  localFavoritesCache.push(movie);
+  
+  // Sync to Cloud
+  await supabase.from('favorites').insert([{
+    user_id: user.id,
+    movie_id: movie.id,
+    movie_data: movie
+  }]);
 }
 
-function addFavorite(movie) {
-  const favs = getFavorites();
-  if (favs.some((m) => m.id === movie.id)) return;
-  favs.push(movie);
-  _saveFavorites(favs);
-}
-
-function removeFavorite(movieId) {
-  _saveFavorites(getFavorites().filter((m) => m.id !== movieId));
+async function removeFavorite(movieId) {
+  const user = getCurrentUser();
+  if (!user) return;
+  
+  // Optimistic UI update
+  localFavoritesCache = localFavoritesCache.filter((m) => m.id !== movieId);
+  
+  // Sync to Cloud
+  await supabase.from('favorites').delete().eq('movie_id', movieId).eq('user_id', user.id);
 }
 
 /**
@@ -39,13 +68,20 @@ function removeFavorite(movieId) {
  * Returns true if movie was added, false if removed.
  */
 function toggleFavorite(movie) {
+  const user = getCurrentUser();
+  if (!user) {
+    showToast('Please Login to save favorites!', 'error');
+    document.getElementById('authLink')?.click();
+    return false;
+  }
+
   const nowAdded = !isFavorite(movie.id);
   if (nowAdded) {
     addFavorite(movie);
-    showToast(`Added to Favorites ★`, 'success');
+    showToast(`Saved to Cloud Favorites ★`, 'success');
   } else {
     removeFavorite(movie.id);
-    showToast(`Removed from Favorites`, 'info');
+    showToast(`Removed from Cloud`, 'info');
   }
   return nowAdded;
 }

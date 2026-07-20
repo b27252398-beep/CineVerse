@@ -413,6 +413,8 @@ async function initApp() {
   /* Year in footer */
   document.getElementById('year').textContent = new Date().getFullYear();
 
+  await initAuth(); // Initialize Supabase Auth state
+
   initTheme();
   initNavbar();
   initNavLinks();      // fixes Trending/Popular/Home nav click behaviour
