@@ -44,9 +44,11 @@ function renderHero(movie) {
   oldFavBtn.replaceWith(favBtn);
 
   detailsBtn.addEventListener('click', () => {
-    // In Phase 6 this will trigger the Modal instead of redirecting.
-    // document.body.classList.add('page-transition-out');
-    // setTimeout(() => { window.location.href = `movie.html?id=${movie.id}`; }, 350);
+    if (window.openMovieModal) {
+      window.openMovieModal(movie.id);
+    } else {
+      window.location.href = `movie.html?id=${movie.id}`;
+    }
   });
 
   syncFavoriteButton(favBtn, movie);
