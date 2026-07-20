@@ -15,31 +15,33 @@ async function initAuth() {
   const authPassword = document.getElementById('authPassword');
   const authErrorMsg = document.getElementById('authErrorMsg');
 
-  if (typeof supabase === 'undefined') {
-    console.error("Supabase client is not initialized.");
-    return; // Exit early so the rest of the app doesn't crash
+  let isSupabaseLoaded = typeof supabase !== 'undefined';
+  if (!isSupabaseLoaded) {
+    console.error("Supabase client is not initialized. Auth features will be disabled.");
+    // We do NOT return early here, because we still want to attach event listeners 
+    // to the UI buttons so they show a helpful error instead of doing nothing.
   }
 
-  // Check initial session
-  const { data: { session } } = await supabase.auth.getSession();
-  updateAuthState(session?.user || null);
-
-  // Listen for auth changes
-  supabase.auth.onAuthStateChange((event, session) => {
+  // Check initial session (only if loaded)
+  if (isSupabaseLoaded) {
+    const { data: { session } } = await supabase.auth.getSession();
     updateAuthState(session?.user || null);
-    if (event === 'SIGNED_IN') {
-      closeAuthModal();
-      // Reload favorites for the new user
-      if (window.loadFavoritesFromCloud) window.loadFavoritesFromCloud();
-    } else if (event === 'SIGNED_OUT') {
-      // Clear favorites from UI
-      if (window.clearFavoritesCache) window.clearFavoritesCache();
-      if (window.location.hash === '#favorites') {
-         window.location.hash = ''; // go home if looking at favorites
-         document.querySelector('.navbar__link[href="index.html"]')?.click();
+
+    // Listen for auth changes
+    supabase.auth.onAuthStateChange((event, session) => {
+      updateAuthState(session?.user || null);
+      if (event === 'SIGNED_IN') {
+        closeAuthModal();
+        if (window.loadFavoritesFromCloud) window.loadFavoritesFromCloud();
+      } else if (event === 'SIGNED_OUT') {
+        if (window.clearFavoritesCache) window.clearFavoritesCache();
+        if (window.location.hash === '#favorites') {
+           window.location.hash = '';
+           document.querySelector('.navbar__link[href="index.html"]')?.click();
+        }
       }
-    }
-  });
+    });
+  }
 
   function updateAuthState(user) {
     currentUser = user;
@@ -66,6 +68,10 @@ async function initAuth() {
   if (authLink) {
     authLink.addEventListener('click', async (e) => {
       e.preventDefault();
+      if (!isSupabaseLoaded) {
+        showToast('Authentication is currently unavailable. (AdBlocker might be blocking Supabase)');
+        return;
+      }
       if (currentUser) {
         await supabase.auth.signOut();
         showToast('Logged out successfully');
