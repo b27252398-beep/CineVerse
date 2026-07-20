@@ -17,9 +17,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/style.css?v=5" />
-  <link rel="stylesheet" href="css/responsive.css?v=5" />
-  <link rel="stylesheet" href="css/animations.css?v=5" />
+  <link rel="stylesheet" href="css/style.css?v=7" />
+  <link rel="stylesheet" href="css/responsive.css?v=7" />
+  <link rel="stylesheet" href="css/animations.css?v=7" />
 </head>
 <body>
 
@@ -57,17 +57,6 @@
           <div class="search-suggestions" id="searchSuggestions" hidden></div>
         </div>
 
-        <button class="navbar__theme-toggle" id="themeToggle" aria-label="Toggle dark/light theme">
-          <!-- Icon injected by JS -->
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-        </button>
-
         <button class="navbar__hamburger" id="hamburger" aria-label="Open navigation menu" aria-expanded="false">
           <span></span><span></span><span></span>
         </button>
@@ -78,28 +67,30 @@
 
   <!-- ============ HERO ============ -->
   <section class="hero" id="hero" aria-label="Featured movie">
+    <div class="hero__backdrop" id="heroBackdrop" aria-hidden="true"></div>
+    <div class="hero__gradient"></div>
     <div class="hero__spotlight" aria-hidden="true"></div>
 
     <div class="hero__content">
-      <p class="hero__eyebrow">Now Showing</p>
+      <p class="hero__eyebrow">Premium Feature</p>
       <h1 class="hero__title" id="heroTitle">Loading feature presentation…</h1>
       <p class="hero__overview" id="heroOverview"></p>
 
       <div class="hero__meta" id="heroMeta" aria-label="Movie metadata"></div>
 
       <div class="hero__actions">
-        <button class="btn btn--gold" id="heroDetailsBtn" aria-label="View movie details">
-          ▶ View Details
+        <button class="btn btn--gold" id="heroDetailsBtn" aria-label="Play Trailer">
+          ▶ Play Trailer
         </button>
         <button class="btn btn--ghost" id="heroFavoriteBtn">+ Add to Favorites</button>
       </div>
     </div>
 
-    <!-- Auto-rotation controls -->
+    <!-- Auto-rotation controls with progress -->
     <div class="hero__controls" aria-label="Cycle featured movies">
-      <button class="hero__arrow" id="heroPrev" aria-label="Previous featured movie">‹</button>
-      <div id="heroDots" aria-label="Featured movie indicators" role="group"></div>
-      <button class="hero__arrow" id="heroNext" aria-label="Next featured movie">›</button>
+      <button class="hero__arrow" id="heroPrev" aria-label="Previous featured movie">◄</button>
+      <div class="hero__progress-bar"><div class="hero__progress-fill" id="heroProgress"></div></div>
+      <button class="hero__arrow" id="heroNext" aria-label="Next featured movie">►</button>
     </div>
   </section>
 
@@ -112,6 +103,47 @@
       <button class="btn btn--ghost" id="clearSearchBtn" aria-label="Clear search results">✕ Clear</button>
     </div>
     <div class="movie-row movie-row--grid" id="searchResultsRow" role="list"></div>
+  </section>
+
+  <!-- ============ ADVANCED FILTERS ============ -->
+  <section class="filters-section" aria-label="Filter movies">
+    <div class="filters-header">
+      <h2 class="filters-title">Discover</h2>
+      <button class="btn btn--ghost" id="filtersToggleBtn">Filters <span>▼</span></button>
+    </div>
+    <div class="filters-panel" id="filtersPanel" hidden>
+      <div class="filter-group">
+        <label for="filterGenre">Genre</label>
+        <select id="filterGenre">
+          <option value="">All Genres</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filterYear">Release Year</label>
+        <select id="filterYear">
+          <option value="">Any Year</option>
+          <!-- Years injected by JS -->
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filterSort">Sort By</label>
+        <select id="filterSort">
+          <option value="popularity.desc">Most Popular</option>
+          <option value="vote_average.desc">Highest Rated</option>
+          <option value="primary_release_date.desc">Newest Releases</option>
+        </select>
+      </div>
+      <button class="btn btn--gold" id="applyFiltersBtn">Apply Filters</button>
+      <button class="btn btn--ghost" id="resetFiltersBtn">Reset</button>
+    </div>
+  </section>
+
+  <!-- ============ DISCOVER RESULTS ============ -->
+  <section class="movie-section" id="discoverResultsSection" aria-label="Discover Results" hidden>
+    <div class="movie-section__header">
+      <h2 class="movie-section__title" id="discoverResultsTitle">Discovery Results</h2>
+    </div>
+    <div class="movie-row movie-row--grid" id="discoverResultsRow" role="list"></div>
   </section>
 
   <!-- ============ TRENDING ============ -->
@@ -154,14 +186,74 @@
   <!-- ============ SCROLL-TO-TOP ============ -->
   <button class="scroll-top" id="scrollToTop" aria-label="Scroll back to top">↑</button>
 
+  <!-- ============ MOVIE DETAILS MODAL (SPA) ============ -->
+  <div class="modal-overlay" id="movieModal" hidden aria-modal="true" role="dialog" aria-labelledby="modalTitle">
+    <div class="modal-content">
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close modal">✕</button>
+      
+      <div class="modal-hero">
+        <div class="modal-hero__backdrop" id="modalBackdrop"></div>
+        <div class="modal-hero__gradient"></div>
+        <div class="modal-hero__info">
+          <h2 class="modal-title" id="modalTitle">Loading…</h2>
+          <div class="modal-meta" id="modalMeta"></div>
+          <div class="modal-actions">
+            <button class="btn btn--gold" id="modalPlayBtn">▶ Play Trailer</button>
+            <button class="btn btn--ghost" id="modalFavBtn">+ Add to Favorites</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-body">
+        <div class="modal-body__main">
+          <p class="modal-tagline" id="modalTagline"></p>
+          <p class="modal-overview" id="modalOverview"></p>
+          
+          <div class="modal-section">
+            <h3>Top Cast</h3>
+            <div class="cast-row" id="modalCast"></div>
+          </div>
+        </div>
+        
+        <div class="modal-body__sidebar">
+          <div class="info-block">
+            <span class="info-label">Director:</span>
+            <span class="info-value" id="modalDirector">—</span>
+          </div>
+          <div class="info-block">
+            <span class="info-label">Release:</span>
+            <span class="info-value" id="modalRelease">—</span>
+          </div>
+          <div class="info-block">
+            <span class="info-label">Runtime:</span>
+            <span class="info-value" id="modalRuntime">—</span>
+          </div>
+          <div class="info-block">
+            <span class="info-label">Budget:</span>
+            <span class="info-value" id="modalBudget">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-recommendations" id="modalRecommendations">
+        <div class="movie-section__header">
+          <h3>More Like This</h3>
+        </div>
+        <div class="movie-row movie-row--grid" id="modalSimilarRow"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ TOAST CONTAINER ============ -->
   <div id="toastContainer" aria-live="polite" aria-atomic="false"></div>
 
-  <!-- Scripts: load order matters — utils first, api second, then feature modules -->
-  <script src="js/utils.js?v=5"></script>
-  <script src="js/api.js?v=6"></script>
-  <script src="js/favorites.js?v=5"></script>
-  <script src="js/search.js?v=5"></script>
-  <script src="js/app.js?v=5"></script>
+  <!-- Scripts: load order matters -->
+  <script src="js/utils.js?v=7"></script>
+  <script src="js/api.js?v=7"></script>
+  <script src="js/favorites.js?v=7"></script>
+  <script src="js/filters.js?v=7"></script>
+  <script src="js/modal.js?v=7"></script>
+  <script src="js/search.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>

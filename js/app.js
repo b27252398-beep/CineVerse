@@ -25,20 +25,13 @@ function renderHero(movie) {
     <span class="hero__rating ${ratingClass}">★ ${rating}</span>
   `;
 
-  const spotlight = document.querySelector('.hero__spotlight');
-  if (movie.backdrop_path) {
+  const backdrop = document.getElementById('heroBackdrop');
+  if (movie.backdrop_path && backdrop) {
     // Fade out → update → fade in for smooth transition
-    spotlight.style.opacity = '0';
+    backdrop.style.opacity = '0';
     setTimeout(() => {
-      spotlight.style.backgroundImage = `
-        radial-gradient(ellipse at 30% 20%, rgba(232, 178, 77, 0.2), transparent 60%),
-        linear-gradient(90deg, rgba(9,12,18,0.97) 0%, rgba(9,12,18,0.78) 55%, rgba(9,12,18,0.35) 100%),
-        linear-gradient(180deg, rgba(9,12,18,0.3) 0%, rgba(9,12,18,0.94) 100%),
-        url(${getImageUrl(movie.backdrop_path, 'original')})
-      `;
-      spotlight.style.backgroundSize     = 'cover';
-      spotlight.style.backgroundPosition = 'center 30%';
-      spotlight.style.opacity = '1';
+      backdrop.style.backgroundImage = `url(${getImageUrl(movie.backdrop_path, 'original')})`;
+      backdrop.style.opacity = '0.4';
     }, 300);
   }
 
@@ -51,8 +44,9 @@ function renderHero(movie) {
   oldFavBtn.replaceWith(favBtn);
 
   detailsBtn.addEventListener('click', () => {
-    document.body.classList.add('page-transition-out');
-    setTimeout(() => { window.location.href = `movie.html?id=${movie.id}`; }, 350);
+    // In Phase 6 this will trigger the Modal instead of redirecting.
+    // document.body.classList.add('page-transition-out');
+    // setTimeout(() => { window.location.href = `movie.html?id=${movie.id}`; }, 350);
   });
 
   syncFavoriteButton(favBtn, movie);
@@ -60,55 +54,44 @@ function renderHero(movie) {
     toggleFavorite(movie);
     syncFavoriteButton(document.getElementById('heroFavoriteBtn'), movie);
   });
-
-  /* Update dot indicators */
-  updateHeroDots();
 }
 
 function startHeroRotation(movies) {
   _heroMovies = movies.slice(0, 8);
   _heroIndex  = 0;
   renderHero(_heroMovies[0]);
-  buildHeroDots();
-  _heroTimer = setInterval(advanceHero, HERO_INTERVAL);
+  initHeroControls();
+  startProgressAnimation();
 }
 
 function advanceHero(direction = 1) {
-  clearInterval(_heroTimer);
   _heroIndex = (_heroIndex + direction + _heroMovies.length) % _heroMovies.length;
   renderHero(_heroMovies[_heroIndex]);
-  _heroTimer = setInterval(advanceHero, HERO_INTERVAL);
+  startProgressAnimation();
 }
 
-function buildHeroDots() {
-  const dotsEl = document.getElementById('heroDots');
-  if (!dotsEl) return;
-  dotsEl.innerHTML = '';
-  _heroMovies.forEach((_, i) => {
-    const dot = document.createElement('button');
-    dot.className  = 'hero__dot';
-    dot.setAttribute('aria-label', `Show movie ${i + 1}`);
-    dot.addEventListener('click', () => {
-      clearInterval(_heroTimer);
-      _heroIndex = i;
-      renderHero(_heroMovies[i]);
-      _heroTimer = setInterval(advanceHero, HERO_INTERVAL);
-    });
-    dotsEl.appendChild(dot);
-  });
-  updateHeroDots();
+function startProgressAnimation() {
+  const progressFill = document.getElementById('heroProgress');
+  if (!progressFill) return;
+  
+  clearInterval(_heroTimer);
+  progressFill.style.transition = 'none';
+  progressFill.style.width = '0%';
+  
+  // Force reflow
+  void progressFill.offsetWidth;
+  
+  progressFill.style.transition = `width ${HERO_INTERVAL}ms linear`;
+  progressFill.style.width = '100%';
+  
+  _heroTimer = setTimeout(() => {
+    advanceHero(1);
+  }, HERO_INTERVAL);
+}
 
-  /* Arrow controls */
+function initHeroControls() {
   document.getElementById('heroPrev')?.addEventListener('click', () => advanceHero(-1));
   document.getElementById('heroNext')?.addEventListener('click', () => advanceHero(1));
-}
-
-function updateHeroDots() {
-  const dotsEl = document.getElementById('heroDots');
-  if (!dotsEl) return;
-  dotsEl.querySelectorAll('.hero__dot').forEach((dot, i) => {
-    dot.classList.toggle('hero__dot--active', i === _heroIndex);
-  });
 }
 
 /* --------------------------------------------------------------------------
@@ -231,8 +214,10 @@ function initRevealAnimations() {
    -------------------------------------------------------------------------- */
 function showMainSections() {
   document.getElementById('searchResults').setAttribute('hidden', '');
+  document.getElementById('discoverResultsSection')?.setAttribute('hidden', '');
   document.getElementById('trending').removeAttribute('hidden');
   document.getElementById('popular').removeAttribute('hidden');
+  document.getElementById('hero')?.removeAttribute('hidden');
   // Clear the search input so it doesn't look like results are still active
   const searchInput = document.getElementById('searchInput');
   if (searchInput) searchInput.value = '';
@@ -247,13 +232,28 @@ function renderFavoritesView() {
   const resultsTitle   = document.getElementById('searchResultsTitle');
   const favs           = getFavorites();
 
-  resultsTitle.textContent = favs.length === 0 ? 'No Favorites Yet' : 'Your Favorites';
-  renderMovieRow(resultsRow, favs);
-  if (favs.length > 0) enableHorizontalScroll(resultsRow);
+  if (favs.length === 0) {
+    resultsTitle.textContent = 'Your Favorites';
+    resultsRow.innerHTML = '<div class="search-suggestions__empty" style="grid-column: 1/-1; padding: 40px; text-align: center;">You haven\'t added any favorites yet. Explore the catalog and click the "+ Add to Favorites" button!</div>';
+  } else {
+    resultsTitle.textContent = 'Your Favorites';
+    renderMovieRow(resultsRow, favs);
+    enableHorizontalScroll(resultsRow);
+  }
+  
   resultsSection.removeAttribute('hidden');
-  document.getElementById('trending').setAttribute('hidden', '');
-  document.getElementById('popular').setAttribute('hidden', '');
-  resultsSection.scrollIntoView({ behavior: 'smooth' });
+  
+  // Hide other main sections
+  document.getElementById('trending')?.setAttribute('hidden', '');
+  document.getElementById('popular')?.setAttribute('hidden', '');
+  document.getElementById('hero')?.setAttribute('hidden', '');
+  document.getElementById('discoverResultsSection')?.setAttribute('hidden', '');
+  
+  // Also clear search bar if it was used
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+  
+  resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function initFavoritesLink() {
@@ -350,11 +350,13 @@ async function initApp() {
 
   initTheme();
   initNavbar();
-  initNavLinks();      // ← fixes Trending/Popular/Home nav click behaviour
+  initNavLinks();      // fixes Trending/Popular/Home nav click behaviour
   initSearch();
+  initFilters();
+  initModal();
   initFavoritesLink();
   initScrollToTop();
-  initAnimations();    // ← parallax, ripple, reveal effects
+  initAnimations();    // parallax, ripple, reveal effects
 
   const trendingRow = document.getElementById('trendingRow');
   const popularRow  = document.getElementById('popularRow');

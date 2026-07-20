@@ -96,17 +96,28 @@ function renderSkeletons(containerEl, count = 10) {
    -------------------------------------------------------------------------- */
 function createMovieCard(movie, index = 0) {
   const card = document.createElement('a');
-  card.href       = `movie.html?id=${movie.id}`;
+  card.href       = `#`; // SPA Modal Trigger
   card.className  = 'movie-card';
   card.setAttribute('data-id', movie.id);
   card.style.setProperty('--card-index', index); // drives animation stagger
+
+  // SPA Click Intercept
+  card.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (window.openMovieModal) {
+      window.openMovieModal(movie.id);
+    } else {
+      // Fallback if modal isn't loaded
+      window.location.href = `movie.html?id=${movie.id}`;
+    }
+  });
 
   /* Poster */
   const img = document.createElement('img');
   img.className   = 'movie-card__poster';
   img.src         = getImageUrl(movie.poster_path);
   img.loading     = 'lazy';
-  img.alt         = '';   // decorative; title text below is sufficient
+  img.alt         = '';
   img.onerror     = function () {
     this.src = 'https://placehold.co/342x513/151922/6B7280?text=No+Poster';
     this.onerror = null;
@@ -117,7 +128,38 @@ function createMovieCard(movie, index = 0) {
   badge.className = `movie-card__badge ${getRatingClass(movie.vote_average)}`;
   badge.textContent = `★ ${formatRating(movie.vote_average)}`;
 
-  /* Body */
+  /* Hover Overlay (Premium) */
+  const overlay = document.createElement('div');
+  overlay.className = 'movie-card__overlay';
+  
+  const playBtn = document.createElement('div');
+  playBtn.className = 'movie-card__play-btn';
+  playBtn.innerHTML = '▶';
+
+  const overlayTitle = document.createElement('p');
+  overlayTitle.className = 'movie-card__overlay-title';
+  overlayTitle.textContent = movie.title;
+  
+  const overlayMeta = document.createElement('div');
+  overlayMeta.className = 'movie-card__overlay-meta';
+  
+  const yearSpan = document.createElement('span');
+  yearSpan.textContent = getYear(movie.release_date);
+  overlayMeta.appendChild(yearSpan);
+
+  // If we have genres cached and this movie has genre_ids
+  if (movie.genre_ids && movie.genre_ids.length > 0 && typeof getGenreName === 'function') {
+    const cachedGenres = JSON.parse(localStorage.getItem('cineverse_genres') || '[]');
+    const genreSpan = document.createElement('span');
+    genreSpan.textContent = getGenreName(movie.genre_ids[0], cachedGenres);
+    overlayMeta.appendChild(genreSpan);
+  }
+  
+  overlay.appendChild(playBtn);
+  overlay.appendChild(overlayTitle);
+  overlay.appendChild(overlayMeta);
+
+  /* Body (Fallback/Bottom details) */
   const body = document.createElement('div');
   body.className = 'movie-card__body';
 
@@ -125,15 +167,11 @@ function createMovieCard(movie, index = 0) {
   title.className  = 'movie-card__title';
   title.textContent = movie.title;
 
-  const year = document.createElement('span');
-  year.className  = 'movie-card__year';
-  year.textContent = getYear(movie.release_date);
-
   body.appendChild(title);
-  body.appendChild(year);
 
   card.appendChild(img);
   card.appendChild(badge);
+  card.appendChild(overlay);
   card.appendChild(body);
 
   /* 3-D tilt on desktop hover */

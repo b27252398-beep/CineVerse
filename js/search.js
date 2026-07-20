@@ -56,8 +56,17 @@ function initSearch() {
 
       results.slice(0, 6).forEach((movie) => {
         const item = document.createElement('a');
-        item.href      = `movie.html?id=${movie.id}`;
+        item.href      = `#`;
         item.className = 'search-suggestions__item';
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          hideSuggestions();
+          if (window.openMovieModal) {
+            window.openMovieModal(movie.id);
+          } else {
+            window.location.href = `movie.html?id=${movie.id}`;
+          }
+        });
 
         const img = document.createElement('img');
         img.className = 'search-suggestions__poster';

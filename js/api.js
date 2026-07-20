@@ -30,42 +30,67 @@ async function tmdbFetch(endpoint, params = {}) {
   return response.json();
 }
 
-async function fetchTrending() {
-  const data = await tmdbFetch('/trending/movie/week');
+async function fetchTrending(page = 1) {
+  const data = await tmdbFetch('/trending/movie/week', { page });
   return data.results;
 }
 
-async function fetchPopular() {
-  const data = await tmdbFetch('/movie/popular');
+async function fetchPopular(page = 1) {
+  const data = await tmdbFetch('/movie/popular', { page });
   return data.results;
 }
 
 async function fetchMovieDetails(id) {
-  return tmdbFetch(`/movie/${id}`);
+  return tmdbFetch(`/movie/${id}`, { append_to_response: 'credits,videos,recommendations,similar' });
 }
 
-async function fetchMovieCredits(id) {
-  const data = await tmdbFetch(`/movie/${id}/credits`);
-  return data.cast.slice(0, 10); // top 10 billed cast
-}
-
-async function fetchMovieVideos(id) {
-  const data = await tmdbFetch(`/movie/${id}/videos`);
-  // Prefer an official YouTube trailer; fall back to the first video available.
-  return (
-    data.results.find((v) => v.site === 'YouTube' && v.type === 'Trailer') ||
-    data.results[0] ||
-    null
-  );
-}
-
-async function fetchSimilarMovies(id) {
-  const data = await tmdbFetch(`/movie/${id}/similar`);
-  return data.results.slice(0, 12);
-}
-
-async function searchMovies(query) {
+async function searchMovies(query, page = 1) {
   if (!query || !query.trim()) return [];
-  const data = await tmdbFetch('/search/movie', { query, include_adult: false });
+  const data = await tmdbFetch('/search/movie', { query, include_adult: false, page });
   return data.results;
+}
+
+/* ==========================================================================
+   NEW API ENDPOINTS FOR PREMIUM FEATURES
+   ========================================================================== */
+
+/**
+ * Fetch and cache genres to avoid redundant API calls.
+ * Used for displaying genre tags on movie cards.
+ */
+async function fetchGenres() {
+  const cached = localStorage.getItem('cineverse_genres');
+  if (cached) {
+    try { return JSON.parse(cached); } catch(e) {}
+  }
+  try {
+    const data = await tmdbFetch('/genre/movie/list');
+    localStorage.setItem('cineverse_genres', JSON.stringify(data.genres));
+    return data.genres;
+  } catch (error) {
+    console.error("Failed to fetch genres:", error);
+    return [];
+  }
+}
+
+/**
+ * Advanced filtering via Discover API.
+ * filters object can contain: with_genres, primary_release_year, sort_by, vote_average.gte
+ */
+async function discoverMovies(filters = {}, page = 1) {
+  const data = await tmdbFetch('/discover/movie', {
+    ...filters,
+    include_adult: false,
+    include_video: false,
+    page
+  });
+  return data.results;
+}
+
+/**
+ * Helper to get a genre name from its ID using cached genres.
+ */
+function getGenreName(id, genreList = []) {
+  const genre = genreList.find(g => g.id === id);
+  return genre ? genre.name : '';
 }
