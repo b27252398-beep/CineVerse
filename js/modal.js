@@ -135,6 +135,11 @@ async function openMovieModal(movieId) {
       });
     }
 
+    // Render Reviews
+    if (typeof renderReviewsForMovie === 'function') {
+      renderReviewsForMovie(movie.id);
+    }
+
     // Trailer Button Logic
     const playBtn = document.getElementById('modalPlayBtn');
     // Strip old listeners
