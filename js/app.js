@@ -260,10 +260,59 @@ function renderFavoritesView() {
   resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function renderHistoryView() {
+  const resultsSection = document.getElementById('searchResults');
+  const resultsRow     = document.getElementById('searchResultsRow');
+  const resultsTitle   = document.getElementById('searchResultsTitle');
+  const hist           = getHistory();
+
+  if (hist.length === 0) {
+    resultsTitle.textContent = 'Watch History';
+    resultsRow.innerHTML = '<div class="search-suggestions__empty" style="grid-column: 1/-1; padding: 40px; text-align: center;">You haven\'t marked any movies as watched yet.</div>';
+  } else {
+    resultsTitle.textContent = 'Watch History';
+    renderMovieRow(resultsRow, hist);
+    enableHorizontalScroll(resultsRow);
+  }
+  
+  resultsSection.removeAttribute('hidden');
+  
+  // Hide other main sections
+  document.getElementById('trending')?.setAttribute('hidden', '');
+  document.getElementById('popular')?.setAttribute('hidden', '');
+  document.getElementById('hero')?.setAttribute('hidden', '');
+  document.getElementById('discoverResultsSection')?.setAttribute('hidden', '');
+  document.getElementById('bollywoodHubSection')?.setAttribute('hidden', '');
+  
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+  
+  resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function initFavoritesLink() {
   document.getElementById('favoritesLink')?.addEventListener('click', (e) => {
     e.preventDefault();
+    if (!getCurrentUser()) {
+      if (typeof showToast === 'function') showToast("Please log in to view your favorites.");
+      document.getElementById('authModal')?.removeAttribute('hidden');
+      return;
+    }
+    window.location.hash = 'favorites';
     renderFavoritesView();
+  });
+}
+
+function initHistoryLink() {
+  document.getElementById('historyLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!getCurrentUser()) {
+      if (typeof showToast === 'function') showToast("Please log in to view your watch history.");
+      document.getElementById('authModal')?.removeAttribute('hidden');
+      return;
+    }
+    window.location.hash = 'history';
+    renderHistoryView();
   });
 }
 

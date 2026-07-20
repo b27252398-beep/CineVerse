@@ -116,6 +116,25 @@ async function openMovieModal(movieId) {
          syncFavoriteButton(document.getElementById('heroFavoriteBtn'), movie);
       }
     });
+
+    // History Button Logic
+    const histBtn = document.getElementById('modalHistoryBtn');
+    if (histBtn) {
+      const newHistBtn = histBtn.cloneNode(true);
+      histBtn.replaceWith(newHistBtn);
+      
+      if (typeof syncHistoryButton === 'function') {
+         syncHistoryButton(newHistBtn, movie);
+      }
+      
+      newHistBtn.addEventListener('click', async () => {
+        if (typeof toggleHistory === 'function') {
+           await toggleHistory(movie);
+           syncHistoryButton(newHistBtn, movie);
+        }
+      });
+    }
+
     // Trailer Button Logic
     const playBtn = document.getElementById('modalPlayBtn');
     // Strip old listeners
