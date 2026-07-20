@@ -413,11 +413,11 @@ async function initApp() {
   /* Year in footer */
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  try {
-    await initAuth(); // Initialize Supabase Auth state
-  } catch (err) {
-    console.error("Auth initialization failed:", err);
-    // Continue loading the app even if Auth fails
+  // Initialize Supabase Auth state in the background so it doesn't block the UI
+  if (typeof initAuth === 'function') {
+    initAuth().catch(err => {
+      console.error("Auth initialization failed:", err);
+    });
   }
 
   initTheme();
