@@ -58,29 +58,35 @@ async function initAuth() {
   }
 
   function closeAuthModal() {
+    if (!authModal) return;
     authModal.setAttribute('hidden', '');
     document.body.style.overflow = '';
   }
 
-  authLink.addEventListener('click', async (e) => {
-    e.preventDefault();
-    if (currentUser) {
-      await supabase.auth.signOut();
-      showToast('Logged out successfully');
-    } else {
-      openAuthModal();
-    }
-  });
+  if (authLink) {
+    authLink.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (currentUser) {
+        await supabase.auth.signOut();
+        showToast('Logged out successfully');
+      } else {
+        openAuthModal();
+      }
+    });
+  }
 
-  authCloseBtn.addEventListener('click', closeAuthModal);
+  if (authCloseBtn) authCloseBtn.addEventListener('click', closeAuthModal);
 
   // Close on outside click
-  authModal.addEventListener('click', (e) => {
-    if (e.target === authModal) closeAuthModal();
-  });
+  if (authModal) {
+    authModal.addEventListener('click', (e) => {
+      if (e.target === authModal) closeAuthModal();
+    });
+  }
 
   // Login handler
-  authLoginBtn.addEventListener('click', async (e) => {
+  if (authLoginBtn) {
+    authLoginBtn.addEventListener('click', async (e) => {
     e.preventDefault(); // Don't submit form natively
     if (!authEmail.value || !authPassword.value) {
        showAuthError('Please enter both email and password.');
@@ -106,35 +112,37 @@ async function initAuth() {
   });
 
   // Sign up handler
-  authSignupBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    if (!authEmail.value || !authPassword.value) {
-       showAuthError('Please enter both email and password.');
-       return;
-    }
-    
-    authSignupBtn.textContent = 'Signing up...';
-    authSignupBtn.disabled = true;
-    
-    const { data, error } = await supabase.auth.signUp({
-      email: authEmail.value,
-      password: authPassword.value,
-    });
-    
-    authSignupBtn.textContent = 'Sign Up';
-    authSignupBtn.disabled = false;
-    
-    if (error) {
-      showAuthError(error.message);
-    } else {
-      // Supabase auto signs in if email confirmation is off (default for tests)
-      showToast('Account created successfully!');
-      if (!data.session) {
-         showToast('Please check your email to confirm your account.');
-         closeAuthModal();
+  if (authSignupBtn) {
+    authSignupBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (!authEmail.value || !authPassword.value) {
+         showAuthError('Please enter both email and password.');
+         return;
       }
-    }
-  });
+      
+      authSignupBtn.textContent = 'Signing up...';
+      authSignupBtn.disabled = true;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email: authEmail.value,
+        password: authPassword.value,
+      });
+      
+      authSignupBtn.textContent = 'Sign Up';
+      authSignupBtn.disabled = false;
+      
+      if (error) {
+        showAuthError(error.message);
+      } else {
+        // Supabase auto signs in if email confirmation is off (default for tests)
+        showToast('Account created successfully!');
+        if (!data.session) {
+           showToast('Please check your email to confirm your account.');
+           closeAuthModal();
+        }
+      }
+    });
+  }
 
   function showAuthError(msg) {
     authErrorMsg.textContent = msg;
