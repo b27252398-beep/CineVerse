@@ -16,46 +16,20 @@ async function initAuth() {
   const authErrorMsg = document.getElementById('authErrorMsg');
 
   let isSupabaseLoaded = typeof supabase !== 'undefined';
-  if (!isSupabaseLoaded) {
-    console.error("Supabase client is not initialized. Auth features will be disabled.");
-    // We do NOT return early here, because we still want to attach event listeners 
-    // to the UI buttons so they show a helpful error instead of doing nothing.
-  }
-
-  // Check initial session (only if loaded)
-  if (isSupabaseLoaded) {
-    const { data: { session } } = await supabase.auth.getSession();
-    updateAuthState(session?.user || null);
-
-    // Listen for auth changes
-    supabase.auth.onAuthStateChange((event, session) => {
-      updateAuthState(session?.user || null);
-      if (event === 'SIGNED_IN') {
-        closeAuthModal();
-        if (window.loadFavoritesFromCloud) window.loadFavoritesFromCloud();
-      } else if (event === 'SIGNED_OUT') {
-        if (window.clearFavoritesCache) window.clearFavoritesCache();
-        if (window.location.hash === '#favorites') {
-           window.location.hash = '';
-           document.querySelector('.navbar__link[href="index.html"]')?.click();
-        }
-      }
-    });
-  }
-
+  
   function updateAuthState(user) {
     currentUser = user;
     if (user) {
-      authLink.textContent = 'Logout';
+      if (authLink) authLink.textContent = 'Logout';
     } else {
-      authLink.textContent = 'Login / Sign Up';
+      if (authLink) authLink.textContent = 'Login / Sign Up';
     }
   }
 
   function openAuthModal() {
-    authErrorMsg.style.display = 'none';
-    authForm.reset();
-    authModal.removeAttribute('hidden');
+    if (authErrorMsg) authErrorMsg.style.display = 'none';
+    if (authForm) authForm.reset();
+    if (authModal) authModal.removeAttribute('hidden');
     document.body.style.overflow = 'hidden';
   }
 
@@ -65,16 +39,30 @@ async function initAuth() {
     document.body.style.overflow = '';
   }
 
+  function showAuthError(msg) {
+    if (authErrorMsg) {
+      authErrorMsg.textContent = msg;
+      authErrorMsg.style.display = 'block';
+    }
+  }
+
+  // --- 1. ATTACH ALL UI EVENT LISTENERS FIRST ---
   if (authLink) {
     authLink.addEventListener('click', async (e) => {
       e.preventDefault();
       if (!isSupabaseLoaded) {
-        showToast('Authentication is currently unavailable. (AdBlocker might be blocking Supabase)');
+        if (typeof showToast === 'function') {
+           showToast('Authentication is currently unavailable. (AdBlocker might be blocking Supabase)');
+        }
         return;
       }
       if (currentUser) {
-        await supabase.auth.signOut();
-        showToast('Logged out successfully');
+        try {
+          await supabase.auth.signOut();
+          if (typeof showToast === 'function') showToast('Logged out successfully');
+        } catch(err) {
+          console.error("Logout failed", err);
+        }
       } else {
         openAuthModal();
       }
@@ -83,41 +71,40 @@ async function initAuth() {
 
   if (authCloseBtn) authCloseBtn.addEventListener('click', closeAuthModal);
 
-  // Close on outside click
   if (authModal) {
     authModal.addEventListener('click', (e) => {
       if (e.target === authModal) closeAuthModal();
     });
   }
 
-  // Login handler
   if (authLoginBtn) {
     authLoginBtn.addEventListener('click', async (e) => {
-    e.preventDefault(); // Don't submit form natively
-    if (!authEmail.value || !authPassword.value) {
-       showAuthError('Please enter both email and password.');
-       return;
-    }
-    
-    authLoginBtn.textContent = 'Logging in...';
-    authLoginBtn.disabled = true;
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: authEmail.value,
-      password: authPassword.value,
+      e.preventDefault();
+      if (!authEmail.value || !authPassword.value) {
+         showAuthError('Please enter both email and password.');
+         return;
+      }
+      
+      authLoginBtn.textContent = 'Logging in...';
+      authLoginBtn.disabled = true;
+      
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: authEmail.value,
+          password: authPassword.value,
+        });
+        
+        if (error) throw error;
+        if (typeof showToast === 'function') showToast('Welcome back!');
+      } catch (err) {
+        showAuthError(err.message || 'Login failed');
+      } finally {
+        authLoginBtn.textContent = 'Login';
+        authLoginBtn.disabled = false;
+      }
     });
-    
-    authLoginBtn.textContent = 'Login';
-    authLoginBtn.disabled = false;
-    
-    if (error) {
-      showAuthError(error.message);
-    } else {
-      showToast('Welcome back!');
-    }
-  });
+  }
 
-  // Sign up handler
   if (authSignupBtn) {
     authSignupBtn.addEventListener('click', async (e) => {
       e.preventDefault();
@@ -129,30 +116,53 @@ async function initAuth() {
       authSignupBtn.textContent = 'Signing up...';
       authSignupBtn.disabled = true;
       
-      const { data, error } = await supabase.auth.signUp({
-        email: authEmail.value,
-        password: authPassword.value,
-      });
-      
-      authSignupBtn.textContent = 'Sign Up';
-      authSignupBtn.disabled = false;
-      
-      if (error) {
-        showAuthError(error.message);
-      } else {
-        // Supabase auto signs in if email confirmation is off (default for tests)
-        showToast('Account created successfully!');
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: authEmail.value,
+          password: authPassword.value,
+        });
+        
+        if (error) throw error;
+        
+        if (typeof showToast === 'function') showToast('Account created successfully!');
         if (!data.session) {
-           showToast('Please check your email to confirm your account.');
+           if (typeof showToast === 'function') showToast('Please check your email to confirm your account.');
            closeAuthModal();
         }
+      } catch (err) {
+        showAuthError(err.message || 'Signup failed');
+      } finally {
+        authSignupBtn.textContent = 'Sign Up';
+        authSignupBtn.disabled = false;
       }
     });
   }
 
-  function showAuthError(msg) {
-    authErrorMsg.textContent = msg;
-    authErrorMsg.style.display = 'block';
+  // --- 2. INITIALIZE SUPABASE SESSION ---
+  if (isSupabaseLoaded) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      updateAuthState(session?.user || null);
+
+      supabase.auth.onAuthStateChange((event, session) => {
+        updateAuthState(session?.user || null);
+        if (event === 'SIGNED_IN') {
+          closeAuthModal();
+          if (window.loadFavoritesFromCloud) window.loadFavoritesFromCloud();
+        } else if (event === 'SIGNED_OUT') {
+          if (window.clearFavoritesCache) window.clearFavoritesCache();
+          if (window.location.hash === '#favorites') {
+             window.location.hash = '';
+             document.querySelector('.navbar__link[href="index.html"]')?.click();
+          }
+        }
+      });
+    } catch (err) {
+      console.error("Failed to initialize Supabase session. Local storage may be blocked.", err);
+      isSupabaseLoaded = false; // Disable auth features if it crashes
+    }
+  } else {
+    console.warn("Supabase client is not initialized. Auth features will be disabled.");
   }
 }
 
