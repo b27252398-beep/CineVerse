@@ -37,6 +37,11 @@
     -webkit-backdrop-filter: none !important;
   }
 
+  /* Hide the decorative filmstrip bar on mobile — it appears as a dark bar below the navbar */
+  .filmstrip {
+    display: none !important;
+  }
+
   /* Mobile nav drawer */
   .navbar__links {
     position:         fixed;
