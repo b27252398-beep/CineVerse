@@ -30,6 +30,13 @@
    TABLET / SMALL LAPTOP (≤ 900px) — collapse nav, show hamburger
    ========================================================================== */
 @media (max-width: 900px) {
+  /* Fix Chromium sticky + backdrop-filter clipping bug */
+  .navbar {
+    background-color: rgba(9, 12, 18, 0.98) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
   /* Mobile nav drawer */
   .navbar__links {
     position:         fixed;
